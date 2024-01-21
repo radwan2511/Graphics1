@@ -27,13 +27,12 @@ void Game::Init()
 	AddShader("../res/shaders/pickingShader");	
 	AddShader("../res/shaders/basicShader");
 	
-	AddTexture("../res/textures/box0.bmp",false);
-
+	//AddTexture("../res/textures/box0.bmp",false); //changed here
 	AddShape(Plane,-1,TRIANGLES);
 	
 	pickedShape = 0;
 	
-	SetShapeTex(0,0);
+	//SetShapeTex(0,0); // from tergul 3
 	MoveCamera(0,zTranslate,10);
 	pickedShape = -1;
 	
