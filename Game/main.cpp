@@ -3,6 +3,10 @@
 #include "game.h"
 #include "../res/includes/glm/glm.hpp"
 #include <stb_image.h>
+#include <fstream>
+
+// fucntion for assignment
+unsigned char* Halftone(unsigned char* original);
 
 int main(int argc,char *argv[])
 {
@@ -32,7 +36,7 @@ int main(int argc,char *argv[])
 	// step 4 in the assignment
 	unsigned char* edges = data; // TODO should implement a fucntion to change image using sobel operators
 	// step 5 in the assignment
-	unsigned char* halftone = data; // TODO should implement a fucntion to change image using halftone according to last slide in lecture2
+	unsigned char* halftone = Halftone(data);
 	// step 6 in the assignment
 	unsigned char* floyd_steinberg = data; // TODO should implement a fucntion to change image using floyd steinberg algorithm
 
@@ -49,7 +53,7 @@ int main(int argc,char *argv[])
 	scn->CustonDraw(1, 0, scn->BACK, false, false, 1);
 
 	//// buttom - left image
-	scn->AddTexture(256, 256, halftone);
+	scn->AddTexture(512, 512, halftone);
 	scn->SetShapeTex(0, 2);
 	scn->CustonDraw(1, 0, scn->BACK, false, false, 2);
 
@@ -72,4 +76,74 @@ int main(int argc,char *argv[])
 	}
 	delete scn;
 	return 0;
+}
+
+
+
+unsigned char* Halftone(unsigned char* original)
+{
+	unsigned char* result = new unsigned char[256 * 2 * 256 * 2 * 16];
+	int pixelClusterSize = 4; //each pixel becomes 4 pixel
+	int white = 255;
+	int black = 0;
+	// first step initial result 2D array
+	unsigned char** result_2D = (unsigned char**)malloc(pixelClusterSize/2 * 256 * sizeof(unsigned char*));
+	for (int i = 0; i < 256 * pixelClusterSize/2; i++)
+		result_2D[i] = (unsigned char*)malloc(pixelClusterSize / 2 * 256 * sizeof(unsigned char));
+	for (int i = 0; i < 256; i++)
+		for (int j = 0; j < 256; j++) 
+		{
+			// calculate average intensity
+			float intensity = (original[pixelClusterSize * (pixelClusterSize * 256 + j)] + original[pixelClusterSize * (i * 256 + j) + 1] + original[pixelClusterSize * (i * 256 + j) + 2]) / 3;
+			int pixelYPos = 2 * i;
+			int pixelXPos = 2 * j;			
+			if (intensity > 0.8 * white) {
+				result_2D[pixelYPos][pixelXPos] = white;
+				result_2D[pixelYPos + 1][pixelXPos] = white;
+				result_2D[pixelYPos][2 * pixelXPos] = white;
+				result_2D[pixelYPos + 1][pixelXPos + 1] = white;
+			}
+			else if (intensity > 0.6 * white) {
+				result_2D[pixelYPos][pixelXPos] = black;
+				result_2D[pixelYPos + 1][pixelXPos] = white;
+				result_2D[pixelYPos][pixelXPos + 1] = white;
+				result_2D[pixelYPos + 1][pixelXPos + 1] = white;
+			}
+			else if (intensity > 0.4 * white) {
+				result_2D[pixelYPos][pixelXPos] = black;
+				result_2D[pixelYPos + 1][pixelXPos] = white;
+				result_2D[pixelYPos][pixelXPos + 1] = white;
+				result_2D[pixelYPos + 1][pixelXPos + 1] = black;
+
+			}
+			else if (intensity > 0.2 * white) {
+				result_2D[pixelYPos][pixelXPos] = black;
+				result_2D[pixelYPos + 1][pixelXPos] = white;
+				result_2D[pixelYPos][pixelXPos + 1] = black;
+				result_2D[pixelYPos + 1][pixelXPos + 1] = black;
+			}
+			else
+			{
+				result_2D[pixelYPos][pixelXPos] = black;
+				result_2D[pixelYPos + 1][pixelXPos] = black;
+				result_2D[pixelYPos][pixelXPos + 1] = black;
+				result_2D[pixelYPos + 1][pixelXPos + 1] = black;
+			}
+		}
+	// each pixel became 4 pixels in the new black and white picture also writing to text file
+	int pixilPos = 0;
+	std::ofstream img5("img5.txt");
+	if (img5.is_open())
+	{
+		for (int i = 0; i < 256 * pixelClusterSize/2; i++) {
+			img5 << "\n";
+			for (int j = 0; j < 256 * pixelClusterSize/2; j++, pixilPos += 4) {
+				result[pixilPos] = result_2D[i][j];     result[pixilPos + 1] = result_2D[i][j];
+				result[pixilPos + 2] = result_2D[i][j]; result[pixilPos + 3] = result_2D[i][j];
+				img5 << result_2D[i][j]/255 << ",";
+			}
+		}
+		img5.close();
+	}
+	return result;
 }

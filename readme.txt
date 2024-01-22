@@ -23,7 +23,19 @@ implement edge and add documentation to here
 
 
 step 5: 
-implement halftone and add documentation to here
+in main.cpp added function Halftone(original data) and changed the values in addTexture for halftone from hieght and width 256 to 512
+because each pixel becomes 4 pixel in the new black and white image:
+halftone applying:
+1. initalize result one dimentional array
+2. initialize result two dimentional array
+3. loop through the original data and calculate average intensity 
+4. update result two dimention array based on the average intensity same as in lecture 2 last slides
+where: 1.0 >= l >= 0.8 --> all 4 pixels are white
+where: 0.8 > l >= 0.6 --> 3 pixels are white and one is black
+where: 0.6 > l >= 0.4 --> 2 pixels are white and 2 are black
+where: 0.4 > l >= 0.2 --> 1 pixel is white and 3 are black
+where: 0.2 > l >= 0 --> all 4 pixels are black
+5. update the result one dimentional array after applying the halftone pattern each pixel is 4 pixel in the result and write to img5.txt file
 
 
 step 6: 
