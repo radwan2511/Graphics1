@@ -7,6 +7,7 @@
 
 // fucntion for assignment
 unsigned char* Halftone(unsigned char* original);
+unsigned char* Floyd_Steinberg(unsigned char* original);
 
 int main(int argc,char *argv[])
 {
@@ -32,13 +33,13 @@ int main(int argc,char *argv[])
 	unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4);
 
 	// step 3 in the assignment
-	unsigned char* gray_scale = data; // TODO should implement a fucntion to change image to gray
+	unsigned char* gray_scale = data;
 	// step 4 in the assignment
 	unsigned char* edges = data; // TODO should implement a fucntion to change image using sobel operators
 	// step 5 in the assignment
 	unsigned char* halftone = Halftone(data);
 	// step 6 in the assignment
-	unsigned char* floyd_steinberg = data; // TODO should implement a fucntion to change image using floyd steinberg algorithm
+	unsigned char* floyd_steinberg = Floyd_Steinberg(data);
 
 
 
@@ -100,7 +101,7 @@ unsigned char* Halftone(unsigned char* original)
 			if (intensity > 0.8 * white) {
 				result_2D[pixelYPos][pixelXPos] = white;
 				result_2D[pixelYPos + 1][pixelXPos] = white;
-				result_2D[pixelYPos][2 * pixelXPos] = white;
+				result_2D[pixelYPos][pixelXPos + 1] = white;
 				result_2D[pixelYPos + 1][pixelXPos + 1] = white;
 			}
 			else if (intensity > 0.6 * white) {
@@ -144,6 +145,60 @@ unsigned char* Halftone(unsigned char* original)
 			}
 		}
 		img5.close();
+	}
+	return result;
+}
+
+unsigned char* Floyd_Steinberg(unsigned char* original)
+{
+	unsigned char* result = new unsigned char[256 * 2 * 256 * 2 * 8];
+	int pixelClusterSize = 4;
+	int pixelPos = 0;
+	// second step initial result 2D array
+	unsigned char result_2D[256][256];
+	for (int i = 0; i < 256; i++)
+	{
+		for (int j = 0; j < 256; j++,pixelPos++)
+		{
+			result_2D[i][j] = (original[pixelClusterSize * (pixelClusterSize * 256 + j)] + original[pixelClusterSize * (i * 256 + j) + 1] + original[pixelClusterSize * (i * 256 + j) + 2]) / 3;
+		}
+	}
+
+	for (int i = 0; i < 256; i++) {
+		for (int j = 0; j < 256; j++) {
+
+			if (j - 1 >= 0 && i + 1 < 256 && j + 1 < 256)
+			{
+				// Error Diffusion Dither just as explained in lecture 2 page 120
+				int l = result_2D[i][j];
+				int P = ((l + 0.5) /16)*16; // trunc(l(x,y) + 0.5)
+				float e = l - P;
+				float a = 7 / 16.0;
+				float b = 3 / 16.0;
+				float g = 5 / 16.0;
+				float d = 1 / 16.0;
+				result_2D[i][j+1] += a * e;
+				result_2D[i + 1][j - 1] += b * e ;
+				result_2D[i + 1][j] += g * e ;
+				result_2D[i + 1][j+1] += d * e ;
+			}
+		}
+	}
+
+	pixelPos = 0;
+	//int pixilPos = 0;
+	std::ofstream img6("img6.txt");
+	if (img6.is_open())
+	{
+		for (int i = 0; i < 256 ; i++) {
+			img6 << "\n";
+			for (int j = 0; j < 256; j++, pixelPos += 4) {
+				result[pixelPos] = result_2D[i][j];     result[pixelPos + 1] = result_2D[i][j];
+				result[pixelPos + 2] = result_2D[i][j]; result[pixelPos + 3] = result_2D[i][j];
+				img6 << result_2D[i][j]/16 << ",";
+			}
+		}
+		img6.close();
 	}
 	return result;
 }

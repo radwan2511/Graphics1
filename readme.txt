@@ -15,7 +15,7 @@ just as suggested from tirgul 3
 step 2 in assignment inside main.cpp in function main() changed the value of DISPLAY_WIDTH and DISPLAY_HEIGHT to 512 
 
 step 3:
-implement gray scale and add documentation to here
+no need to implement because picture is already in gray scale as stated in the assignment pdf
 
 
 step 4:
@@ -23,7 +23,7 @@ implement edge and add documentation to here
 
 
 step 5: 
-in main.cpp added function Halftone(original data) and changed the values in addTexture for halftone from hieght and width 256 to 512
+in main.cpp added function Halftone(original data) and changed the values in addTexture for halftone from hieght and width 256 to 512 also stated in tips for assignment in practical lecture 2
 because each pixel becomes 4 pixel in the new black and white image:
 halftone applying:
 1. initalize result one dimentional array
@@ -39,7 +39,19 @@ where: 0.2 > l >= 0 --> all 4 pixels are black
 
 
 step 6: 
-implement floyd and add documentation to here
+in main.cpp added function Floyd_Steinberg(original data) which changes the
+image from 256 intensity grayscale values, to 16 intensity grayscale values
+floyd-steinberg applying:
+1. initalize result one dimentional array
+2. initialize result two dimentional array
+3. loop through the original data and calculate average intensity i.e l(x,y) and save it in original two dimentional array
+4. loop through the new data and update pixels in result two dimentional array just as studied and described in lecture 2 page 120
+5. P = trunc(l(x,y) + 0.5), e = l(x,y) - P, alpha = 7/16, beta = 3/16, gamma = 5/16, delta = 1/16
+6. apply this through the nested for loop
+                                            column j
+[                                   ,    P(x,y) = l(x,y)               ,    l(x,y+1) += alpha*e    ]
+[ l(x+1,y-1) = beta*e     ,   l(x+1,y) += gamma*e   ,    l(x+1,y+1) += delta*e ] 
+7. update result two dimention array to one dimentionary array and write to img6.txt file
 
 
 
