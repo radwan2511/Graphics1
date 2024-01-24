@@ -171,7 +171,7 @@ unsigned char* Floyd_Steinberg(unsigned char* original)
 			{
 				// Error Diffusion Dither just as explained in lecture 2 page 120
 				int l = result_2D[i][j];
-				int P = ((l + 0.5) /16)*16; // trunc(l(x,y) + 0.5)
+				int P = ((l - 1) /16)*16 + 1; // trunc(l(x,y) + 0.5)
 				float e = l - P;
 				float a = 7 / 16.0;
 				float b = 3 / 16.0;
