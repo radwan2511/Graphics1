@@ -5,10 +5,16 @@
 #include <stb_image.h>
 #include <fstream>
 
+using namespace std;
+
 // fucntion for assignment
 unsigned char* Halftone(unsigned char* original);
 unsigned char* Floyd_Steinberg(unsigned char* original);
-
+unsigned char* Canny(unsigned char* data);
+vector<vector<unsigned char>>* Gaussine(vector<vector<unsigned char >>* pixels);
+vector<vector<unsigned char>>* Filter(vector<vector<unsigned char>>* pixels, vector<vector<int>>* kernel, float div);
+vector<vector<unsigned char>> Sobel(vector<vector<unsigned char>>* pixels);
+vector<vector<unsigned char>> nonMaximumSupprition(vector<vector<unsigned char>> pixels);
 int main(int argc,char *argv[])
 {
 	const int DISPLAY_WIDTH = 512; // changed here to 512 i.e.step 2 in the assignment
@@ -35,7 +41,7 @@ int main(int argc,char *argv[])
 	// step 3 in the assignment
 	unsigned char* gray_scale = data;
 	// step 4 in the assignment
-	unsigned char* edges = data; // TODO should implement a fucntion to change image using sobel operators
+	unsigned char* edges = Canny(data); // TODO should implement a fucntion to change image using sobel operators
 	// step 5 in the assignment
 	unsigned char* halftone = Halftone(data);
 	// step 6 in the assignment
@@ -80,6 +86,145 @@ int main(int argc,char *argv[])
 }
 
 
+unsigned char* Canny(unsigned char* data){
+	vector<vector<unsigned char>>* original = new vector<vector<unsigned char>>();
+	for (int i = 0;i < 256;i++) {
+		vector<unsigned char> row;
+		for (int j = 0;j < 256;j++) {
+			int r = 4 * (i * 256 + j);
+			int g = 4 * (i * 256 + j) + 1;
+			int b = 4 * (i * 256 + j) + 2;
+			unsigned char gray_pixle = (unsigned char)(0.3 * data[r] + 0.58 * data[g] + 0.11 * data[b]);
+			row.push_back(gray_pixle);
+		}
+		original->push_back(row);
+	}
+	vector<vector<unsigned char>> *gauss = Gaussine(original);
+	vector<vector<unsigned char>> sobel = Sobel(gauss);
+	vector<vector<unsigned char>> suppression = nonMaximumSupprition(sobel);
+	unsigned char* result = (unsigned char*)malloc(512 * 512);
+	for (int i = 0, counter = 0; i < 256; i++) {
+		for (int j = 0; j < 256; j++) {
+			int r = 4 * (i * 256 + j);
+			int g = 4 * (i * 256 + j) + 1;
+			int b = 4 * (i * 256 + j) + 2;
+			int alpha = 4 * (i * 256 + j) + 3;
+			result[r] = (suppression)[i][j];
+			result[g] = (suppression)[i][j];
+			result[b] = (suppression)[i][j];
+			result[alpha] = 255;
+		}
+	}
+	return result;
+}
+
+
+vector<vector<unsigned char>>* Gaussine(vector<vector<unsigned char >> *pixels) {
+	vector<vector<int>>* gk = new vector<vector<int>>();
+	gk->push_back(vector<int>{1, 2, 1});
+	gk->push_back(vector<int>{2, 4, 2});
+	gk->push_back(vector<int>{1, 2, 1});
+	return Filter(pixels, gk, 16.0);
+}
+
+vector<vector<unsigned char>>* Filter(vector<vector<unsigned char>>* pixels,vector<vector<int>>* kernel,float div){
+	vector<vector<unsigned char>>* filtered = new vector<vector<unsigned char>>();
+	for (int i = 1; i < 255; i++){
+		vector<unsigned char> row;
+		for (int j = 1; j < 255; j++){
+			float sum = 0;
+			for (int x = 0; x < 3; x++) {
+				for (int y = 0; y < 3; y++) {
+					sum += (*kernel)[x][y] * (*pixels)[i + x - 1][j + y - 1];
+				}
+			}
+			sum /= div;
+			sum = sum < 0 ? 0 : sum>255 ? 255 : sum;
+			unsigned char new_pixel = (char)sum;
+			row.push_back(new_pixel);
+		}
+		filtered->push_back(row);
+	}
+
+	for (auto& row : *filtered) {
+		row.insert(row.begin(), 0);
+		row.push_back(0);
+	}
+	vector<unsigned char> brow(256, 0);
+	filtered->insert(filtered->begin(), brow);
+	filtered->push_back(brow);
+	return filtered;
+}
+
+
+vector<vector<unsigned char>> Sobel(vector<vector<unsigned char>>* pixels){
+	vector<vector<int>>* k_x = new vector<vector<int>>();
+	k_x->push_back(vector<int>{-1, 0, 1});
+	k_x->push_back(vector<int>{-2, 0, 2});
+	k_x->push_back(vector<int>{-1, 0, 1});
+
+	vector<vector<int>>* k_y = new vector<vector<int>>();
+	k_y->push_back(vector<int>{1, 2, 1});
+	k_y->push_back(vector<int>{0, 0, 0});
+	k_y->push_back(vector<int>{-1, -2, -1});
+
+	vector<vector<unsigned char>>* x = Filter(pixels, k_x, 1.0);
+	vector<vector<unsigned char>>* y = Filter(pixels, k_y, 1.0);
+	vector<vector<unsigned char>> sobel(256, vector<unsigned char>(256, 0));
+
+	for (int i = 1; i < 256; i++)
+	{
+		for (int j = 1; j < 256; j++)
+		{
+			unsigned char gx = (*x)[i][j];
+			unsigned char gy = (*y)[i][j];
+			unsigned char val = abs(gx) + abs(gy);
+			(sobel)[i][j] = val;
+		}
+	}
+	return sobel;
+}
+
+vector<vector<unsigned char>> nonMaximumSupprition(vector<vector<unsigned char>> pixels) {
+	vector<vector<float>>* angles = new vector<vector<float>>();
+	for (int i = 0;i < 256;i++) {
+		vector<float> row;
+		for (int j = 0;j < 256;j++) {
+			float angle = (float)(pixels)[i][j] * 180.0 / 3.14;
+			angle = angle < 0 ? angle + 180 : angle;
+			row.push_back(angle);
+		}
+		angles->push_back(row);
+	}
+	vector<vector<unsigned char>> suppression(256, vector<unsigned char>(256, 0));
+
+	for (int i = 1;i < 255;i++) {
+		for (int j = 1; j < 255;j++) {
+			int q = 255; 
+			int r = 255;
+			float angle = (*angles)[i][j];
+			if (0 <= angle < 22.5 | 157.5 <= angle <= 180) {
+				q = (pixels)[i][j + 1];
+				r = (pixels)[i][j - 1];
+			}
+			else if (22.5 <= angle < 67.5) {
+				q = (pixels)[i + 1][j - 1];
+				r = (pixels)[i - 1][j + 1];
+			}
+			else if (67.5 <= angle < 112.5) {
+				q = (pixels)[i + 1][j];
+				r = (pixels)[i - 1][j];
+			}
+			else if (112.5 <= angle < 157.5) {
+				q = (pixels)[i - 1][j - 1];
+				r = (pixels)[i + 1][j + 1];
+			}
+			if (((pixels)[i][j] >= q) & ((pixels)[i][j] >= r))
+				(suppression)[i][j] = (pixels)[i][j];
+		}
+	}
+	return suppression;
+}
 
 unsigned char* Halftone(unsigned char* original)
 {
