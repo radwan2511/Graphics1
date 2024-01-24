@@ -95,7 +95,7 @@ unsigned char* Halftone(unsigned char* original)
 		for (int j = 0; j < 256; j++) 
 		{
 			// calculate average intensity
-			float intensity = (original[pixelClusterSize * (pixelClusterSize * 256 + j)] + original[pixelClusterSize * (i * 256 + j) + 1] + original[pixelClusterSize * (i * 256 + j) + 2]) / 3;
+			float intensity = (original[pixelClusterSize * 256 * i + pixelClusterSize * j] + original[pixelClusterSize * 256 * i + pixelClusterSize * j + 1] + original[pixelClusterSize * 256 * i + pixelClusterSize * j + 2]) / 3;
 			int pixelYPos = 2 * i;
 			int pixelXPos = 2 * j;			
 			if (intensity > 0.8 * white) {
@@ -123,7 +123,7 @@ unsigned char* Halftone(unsigned char* original)
 				result_2D[pixelYPos][pixelXPos + 1] = black;
 				result_2D[pixelYPos + 1][pixelXPos + 1] = black;
 			}
-			else
+			else if (intensity >= 0)
 			{
 				result_2D[pixelYPos][pixelXPos] = black;
 				result_2D[pixelYPos + 1][pixelXPos] = black;
@@ -160,7 +160,7 @@ unsigned char* Floyd_Steinberg(unsigned char* original)
 	{
 		for (int j = 0; j < 256; j++,pixelPos++)
 		{
-			result_2D[i][j] = (original[pixelClusterSize * (pixelClusterSize * 256 + j)] + original[pixelClusterSize * (i * 256 + j) + 1] + original[pixelClusterSize * (i * 256 + j) + 2]) / 3;
+			result_2D[i][j] = (original[pixelClusterSize * 256 * i + pixelClusterSize * j] + original[pixelClusterSize * 256 * i + pixelClusterSize * j + 1] + original[pixelClusterSize * 256 * i + pixelClusterSize * j + 2]) / 3;
 		}
 	}
 
