@@ -45,7 +45,7 @@ int main(int argc,char *argv[])
 	// step 5 in the assignment
 	unsigned char* halftone = Halftone(data);
 	// step 6 in the assignment
-	unsigned char* floyd_steinberg = Floyd_Steinberg(data); // TODO should implement a fucntion to change image using floyd steinberg algorithm
+	unsigned char* floyd_steinberg = Floyd_Steinberg(data);
 
 
 
@@ -351,7 +351,7 @@ unsigned char* Floyd_Steinberg(unsigned char* original)
 	}
 
 	pixelPos = 0;
-	//int pixilPos = 0;
+	
 	std::ofstream img6("img6.txt");
 	if (img6.is_open())
 	{
