@@ -19,8 +19,22 @@ no need to implement because picture is already in gray scale as stated in the a
 
 
 step 4:
-implement edge and add documentation to here
-
+in main.cpp added function Canny(original data) which includes the whole steps for the edge detection algorithm, 
+canny function includes: 
+1. graying the original pixels and creating a 2d vector of grayed chars. 
+2. applying the Gaussine which is calling afunction called Gaussine(grayed pixels vector). 
+  2.1 filtering the pixels with the 3x3 gauss kernel which is {[1,2,1],[2,4,2],[1,2,1]} ==> blurred image result.
+3. applying sobel operator for the blurred image: 
+  3.1 creating filtered image with the {[-1,0,1],[-2,0,2],[-1,0,1]} kernel for x direction.
+  3.2 creating filtered image with the {[1,2,1],[0,0,0],[-1,-2,-1]} kernel for y direction.
+  3.3 creating the gradient image 
+  explanation in "https://homepages.inf.ed.ac.uk/rbf/HIPR2/sobel.htm"
+4. applying Non-maximum Suppression to the gradiented pixles: 
+  4.1 computing and creating angles matrix. 
+  4.2 based in the angle decide which pixles should be in the comparation: 
+      for example, if the angle is 15, deciding the color would be compared with the left and the right pixles of the gradiented image, and if the current pixle value is     
+      bigger than both which means the edge strength is bigger than the neigbors, we keep it otherwise it turned to black. 
+ in another words, comparing the edge strength of a pixle with its corresponding neighbors, and based on there edge strength the color (pixle value) is determind. 
 
 step 5: 
 in main.cpp added function Halftone(original data) and changed the values in addTexture for halftone from hieght and width 256 to 512 also stated in tips for assignment in practical lecture 2
